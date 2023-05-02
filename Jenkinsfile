@@ -35,10 +35,10 @@ pipeline {
                 sh 'ssh user@staging-server "cd /path/to/app; mvn integration-test"'
             }
         }
-        stage('Deploy to Production') {
-            steps {
-                sh 'ssh user@production-server "cd /path/to/app; git pull"'
-            }
-        }
+        // stage('Deploy to Production') {
+        //     steps {
+        //         sh 'ssh user@production-server "cd /path/to/app; git pull"'
+        //     }
+        // }
     }
 }
