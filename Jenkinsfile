@@ -1,23 +1,23 @@
 pipeline {
     agent any
+    tools {
+        maven 'Maven'
+        jdk 'Java'
+    }
     stages {
         stage('Build') {
             steps {
-                // Build the code using Maven
                 sh 'mvn clean package'
             }
         }
         stage('Unit and Integration Tests') {
             steps {
-                // Run unit tests using JUnit
                 sh 'mvn test'
-                // Run integration tests using Selenium
                 sh 'mvn integration-test'
             }
         }
         stage('Code Analysis') {
             steps {
-                // Run code analysis using SonarQube
                 withSonarQubeEnv('SonarQube') {
                     sh 'mvn sonar:sonar'
                 }
@@ -25,32 +25,39 @@ pipeline {
         }
         stage('Security Scan') {
             steps {
-                // Run security scan using OWASP ZAP
-                sh 'zap-cli --zap-path /path/to/zap.sh -p 8080 -t http://localhost:8080 -r zap-report.html -x zap-report.xml -J zap-json.log -c zap-config.cfg'
+                withEnv(['ZAP_PATH=/path/to/zap']) {
+                    sh '$ZAP_PATH/zap.sh -cmd -quickurl http://localhost:8080 -quickprogress -outfile /tmp/zap.out'
+                }
             }
         }
         stage('Deploy to Staging') {
             steps {
-                // Deploy to staging using AWS CodeDeploy
-                sh 'aws deploy create-deployment --application-name MyApp --deployment-group Staging --s3-location s3://my-bucket/my-app.zip --deployment-config-name CodeDeployDefault.OneAtATime --region us-east-1'
+                sh 'ssh harris@10.141.33.191 "cd /opt/myapp && git pull && mvn clean package && sudo systemctl restart myapp"'
             }
         }
         stage('Integration Tests on Staging') {
             steps {
-                // Run integration tests on staging using Selenium
-                sh 'mvn integration-test -Durl=http://staging.myapp.com'
+                sh 'jmeter -n -t /path/to/jmeter-test.jmx -l /tmp/jmeter-results.jtl'
             }
         }
         stage('Deploy to Production') {
             steps {
-                // Deploy to production using AWS CodeDeploy
-                sh 'aws deploy create-deployment --application-name MyApp --deployment-group Production --s3-location s3://my-bucket/my-app.zip --deployment-config-name CodeDeployDefault.OneAtATime --region us-east-1'
+                sh 'ssh harris@10.141.33.191 "cd /opt/myapp && git pull && mvn clean package && sudo systemctl restart myapp"'
             }
         }
     }
-}
-post {
-    always {
-        emailext body: "Pipeline execution finished: ${currentBuild.fullDisplayName}", subject: "Pipeline status: ${currentBuild.currentResult}", to: 'phuochunghuynh592000@gmail.com', attachmentsPattern: '**/*.log'
+    post {
+        failure {
+            emailext body: "Pipeline failed: ${currentBuild.fullDisplayName}",
+                subject: "${currentBuild.fullDisplayName} - Failed",
+                to: 'phuochunghuynh592000@gmail.com',
+                attachmentsPattern: '/tmp/*.out'
+        }
+        success {
+            emailext body: "Pipeline succeeded: ${currentBuild.fullDisplayName}",
+                subject: "${currentBuild.fullDisplayName} - Success",
+                to: 'phuochunghuynh592000@gmail.com',
+                attachmentsPattern: '/tmp/*.out'
+        }
     }
 }
