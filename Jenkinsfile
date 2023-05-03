@@ -1,44 +1,49 @@
 pipeline {
     agent any
+
     stages {
         stage('Build') {
             steps {
-                sh 'mvn clean package'
+                sh 'npm install'
+                sh 'npm run build'
             }
         }
         stage('Unit and Integration Tests') {
             steps {
-                sh 'mvn test'
-                sh 'mvn integration-test'
+                sh 'npm run test:unit'
+                sh 'npm run test:integration'
             }
         }
         stage('Code Analysis') {
             steps {
-                withMaven(maven: 'maven-3.8.3') {
-                    sh 'mvn checkstyle:checkstyle'
-                }
+                sh 'npm run lint'
             }
         }
         stage('Security Scan') {
             steps {
-                sh 'npm install -g snyk'
-                sh 'snyk test'
+                sh 'npm audit'
             }
         }
         stage('Deploy to Staging') {
             steps {
-                sh 'ssh user@staging-server "C:\Users\phuoc\OneDrive\Documents\GitHub\6.2Csit223\Jenkinsfile; git pull"'
+                sh 'npm run deploy:staging'
             }
         }
         stage('Integration Tests on Staging') {
             steps {
-                sh 'ssh user@staging-server "cd C:\Users\phuoc\OneDrive\Documents\GitHub\6.2Csit223\Jenkinsfile; mvn integration-test"'
+                sh 'npm run test:integration-staging'
             }
         }
         stage('Deploy to Production') {
             steps {
-                sh 'ssh user@production-server "cd C:\Users\phuoc\OneDrive\Documents\GitHub\6.2Csit223\Jenkinsfile; git pull"'
+                sh 'npm run deploy:production'
             }
+        }
+    }
+
+    post {
+        always {
+            emailext body: "Pipeline execution finished: ${currentBuild.fullDisplayName}", subject: "Pipeline status: ${currentBuild.currentResult}", to: 'phuochunghuynh592000@gmail.com', attachmentsPattern: '**/*.log'
         }
     }
 }
