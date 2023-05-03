@@ -27,18 +27,18 @@ pipeline {
         }
         stage('Deploy to Staging') {
             steps {
-                sh 'ssh user@staging-server "cd /path/to/app; git pull"'
+                sh 'ssh user@staging-server "C:\Users\phuoc\OneDrive\Documents\GitHub\6.2Csit223\Jenkinsfile; git pull"'
             }
         }
         stage('Integration Tests on Staging') {
             steps {
-                sh 'ssh user@staging-server "cd /path/to/app; mvn integration-test"'
+                sh 'ssh user@staging-server "cd C:\Users\phuoc\OneDrive\Documents\GitHub\6.2Csit223\Jenkinsfile; mvn integration-test"'
             }
         }
-        // stage('Deploy to Production') {
-        //     steps {
-        //         sh 'ssh user@production-server "cd /path/to/app; git pull"'
-        //     }
-        // }
+        stage('Deploy to Production') {
+            steps {
+                sh 'ssh user@production-server "cd C:\Users\phuoc\OneDrive\Documents\GitHub\6.2Csit223\Jenkinsfile; git pull"'
+            }
+        }
     }
 }
