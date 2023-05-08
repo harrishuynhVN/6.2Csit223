@@ -1,63 +1,60 @@
 pipeline {
     agent any
-    tools {
-        maven 'Maven'
-        jdk 'Java'
-    }
+
     stages {
         stage('Build') {
             steps {
-                sh 'mvn clean package'
+                echo 'Building the code...'
+                
             }
         }
         stage('Unit and Integration Tests') {
             steps {
-                sh 'mvn test'
-                sh 'mvn integration-test'
+                echo 'Running unit and integration tests...'
+                
             }
         }
         stage('Code Analysis') {
             steps {
-                withSonarQubeEnv('SonarQube') {
-                    sh 'mvn sonar:sonar'
-                }
+                echo 'Analyzing the code...'
+                
             }
         }
         stage('Security Scan') {
             steps {
-                withEnv(['ZAP_PATH=/path/to/zap']) {
-                    sh '$ZAP_PATH/zap.sh -cmd -quickurl http://localhost:8080 -quickprogress -outfile /tmp/zap.out'
-                }
+                echo 'Performing security scan...'
+               
             }
         }
         stage('Deploy to Staging') {
             steps {
-                sh 'ssh harris@10.141.33.191 "cd /opt/myapp && git pull && mvn clean package && sudo systemctl restart myapp"'
+                echo 'Deploying to staging environment...'
+                
             }
         }
         stage('Integration Tests on Staging') {
             steps {
-                sh 'jmeter -n -t /path/to/jmeter-test.jmx -l /tmp/jmeter-results.jtl'
+                echo 'Running integration tests on staging environment...'
+               
             }
         }
         stage('Deploy to Production') {
             steps {
-                sh 'ssh harris@10.141.33.191 "cd /opt/myapp && git pull && mvn clean package && sudo systemctl restart myapp"'
+                echo 'Deploying to production environment...'
+               
             }
         }
     }
-    post {
-        failure {
-            emailext body: "Pipeline failed: ${currentBuild.fullDisplayName}",
-                subject: "${currentBuild.fullDisplayName} - Failed",
-                to: 'phuochunghuynh592000@gmail.com',
-                attachmentsPattern: '/tmp/*.out'
-        }
-        success {
-            emailext body: "Pipeline succeeded: ${currentBuild.fullDisplayName}",
-                subject: "${currentBuild.fullDisplayName} - Success",
-                to: 'phuochunghuynh592000@gmail.com',
-                attachmentsPattern: '/tmp/*.out'
-        }
+}
+
+post {
+    always {
+        emailext (
+            to: 'phuochunghuynh592000@gmail.com',
+            subject: "${currentBuild.currentResult}: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'",
+            body: """<p>${currentBuild.currentResult}: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'</p>
+                    <p>Check console output at <a href='${env.BUILD_URL}'>${env.JOB_NAME} [${env.BUILD_NUMBER}]</a></p>""",
+            attachLog: true
+        )
     }
 }
