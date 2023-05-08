@@ -13,13 +13,7 @@ pipeline {
                 echo 'Running unit and integration tests...'
                 
             }
-            post{
-                success {
-                    mail to: 'phuochunghuynh592000@gmail.com',
-                    subject: 'Test task 6.2',
-                    body: 'Testing successful!'
-                }
-            }
+           
         }
         stage('Code Analysis') {
             steps {
@@ -54,3 +48,8 @@ pipeline {
     }
 }
 
+post {
+    always {
+        emailext body: "Pipeline execution finished: ${currentBuild.fullDisplayName}", subject: "Pipeline status: ${currentBuild.currentResult}", to: 'phuochunghuynh592000@gmail.com', attachmentsPattern: '**/*.log'
+    }
+}
