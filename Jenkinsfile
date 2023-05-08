@@ -7,6 +7,13 @@ pipeline {
                 echo 'Building the code...'
                 
             }
+            post {
+            success {
+                        mail to: 'phuochunghuynh592000@gmail.com',
+                        subject: 'Build status email',
+                        body: 'Build successful!'
+                    }
+             }
         }
         stage('Unit and Integration Tests') {
             steps {
@@ -45,11 +52,7 @@ pipeline {
                
             }
         }
-        post {
-    always {
-        emailext body: "Pipeline execution finished: ${currentBuild.fullDisplayName}", subject: "Pipeline status: ${currentBuild.currentResult}", to: 'phuochunghuynh592000@gmail.com', attachmentsPattern: '**/*.log'
-        }
-             }
+        
     }
 
     
