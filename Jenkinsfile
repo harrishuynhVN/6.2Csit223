@@ -13,6 +13,13 @@ pipeline {
                 echo 'Running unit and integration tests...'
                 
             }
+            post{
+                success {
+                    mail to: 'phuochunghuynh592000@gmail.com',
+                    subject: 'Test task 6.2',
+                    body: 'Testing successful!'
+                }
+            }
         }
         stage('Code Analysis') {
             steps {
@@ -47,14 +54,3 @@ pipeline {
     }
 }
 
-post {
-    always {
-        emailext (
-            to: 'phuochunghuynh592000@gmail.com',
-            subject: "${currentBuild.currentResult}: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'",
-            body: """<p>${currentBuild.currentResult}: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'</p>
-                    <p>Check console output at <a href='${env.BUILD_URL}'>${env.JOB_NAME} [${env.BUILD_NUMBER}]</a></p>""",
-            attachLog: true
-        )
-    }
-}
