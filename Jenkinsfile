@@ -46,10 +46,12 @@ pipeline {
             }
         }
     }
-}
 
-post {
+    post {
     always {
         emailext body: "Pipeline execution finished: ${currentBuild.fullDisplayName}", subject: "Pipeline status: ${currentBuild.currentResult}", to: 'phuochunghuynh592000@gmail.com', attachmentsPattern: '**/*.log'
     }
 }
+}
+
+
